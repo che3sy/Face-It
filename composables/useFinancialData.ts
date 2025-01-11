@@ -1,5 +1,12 @@
 export const useFinancialData = () => {
-	const client = useSupabaseClient();
+	const client = useSupabaseClient<{
+		data: {
+			type: "income" | "expense";
+			category: string;
+			amount: number;
+			date_transaction: string;
+		};
+	}>();
 	const dateRangeStore = useDateRangeStore();
 
 	interface Transaction {
@@ -102,6 +109,25 @@ export const useFinancialData = () => {
 		return weeklyData;
 	};
 
+	const addTransaction = async (
+		type: "income" | "expense",
+		category: string,
+		amount: number,
+		date_transaction: string
+	) => {
+		const { data, error } = await client
+			.from("data")
+			.insert([{ type, category, amount, date_transaction }]);
+
+		if (error) {
+			console.error("Error adding transaction:", error);
+			return;
+		}
+
+		// Fetch the updated transactions after adding the new one
+		await fetchTransactions();
+	};
+
 	watch(() => dateRangeStore.start, fetchTransactions);
 	watch(() => dateRangeStore.end, fetchTransactions);
 
@@ -114,5 +140,6 @@ export const useFinancialData = () => {
 		getBalance,
 		getWeeklyData,
 		getRecentTransactions,
+		addTransaction,
 	};
 };
