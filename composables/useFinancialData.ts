@@ -11,6 +11,7 @@ export const useFinancialData = () => {
 
 	interface Transaction {
 		type: "income" | "expense";
+		category: string;
 		amount: number;
 		date_transaction: string;
 	}
@@ -115,9 +116,24 @@ export const useFinancialData = () => {
 		amount: number,
 		date_transaction: string
 	) => {
+		const { data: userData, error: userError } =
+			await client.auth.getUserIdentities();
+
+		if (userError) {
+			console.error("Error getting user identities:", userError);
+			return;
+		}
+
+		const user_id = userData?.identities?.[0]?.user_id;
+
+		if (!user_id) {
+			console.error("User ID not found");
+			return;
+		}
+
 		const { data, error } = await client
 			.from("data")
-			.insert([{ type, category, amount, date_transaction }]);
+			.insert([{ type, category, amount, date_transaction, user_id }]);
 
 		if (error) {
 			console.error("Error adding transaction:", error);
@@ -128,6 +144,33 @@ export const useFinancialData = () => {
 		await fetchTransactions();
 	};
 
+	const getTopCategories = () => {
+		const incomeCategories = transactions.value
+			.filter((transaction) => transaction.type === "income")
+			.reduce((acc, transaction) => {
+				acc[transaction.category] =
+					(acc[transaction.category] || 0) + transaction.amount;
+				return acc;
+			}, {} as Record<string, number>);
+
+		const expenseCategories = transactions.value
+			.filter((transaction) => transaction.type === "expense")
+			.reduce((acc, transaction) => {
+				acc[transaction.category] =
+					(acc[transaction.category] || 0) + transaction.amount;
+				return acc;
+			}, {} as Record<string, number>);
+
+		const topIncomeCategory = Object.entries(incomeCategories).sort(
+			(a, b) => b[1] - a[1]
+		)[0];
+
+		const topExpenseCategory = Object.entries(expenseCategories).sort(
+			(a, b) => b[1] - a[1]
+		)[0];
+
+		return { topIncomeCategory, topExpenseCategory };
+	};
 	watch(() => dateRangeStore.start, fetchTransactions);
 	watch(() => dateRangeStore.end, fetchTransactions);
 
@@ -141,5 +184,6 @@ export const useFinancialData = () => {
 		getWeeklyData,
 		getRecentTransactions,
 		addTransaction,
+		getTopCategories,
 	};
 };

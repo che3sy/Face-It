@@ -4,27 +4,38 @@
 	import { Input } from '@/components/ui/input'
 	import { Label } from '@/components/ui/label'
 	import {
-		Popover,
-		PopoverContent,
-		PopoverTrigger,
+	    Popover,
+	    PopoverContent,
+	    PopoverTrigger,
 	} from '@/components/ui/popover'
+
+	import { useFinancialData } from '@/composables/useFinancialData'
 
 	const { addTransaction } = useFinancialData()
 
 	const type = ref('income')
 	const category = ref('')
+	const customCategory = ref('')
 	const amount = ref(0)
 	const date_transaction = ref('')
 
+	const predefinedCategories = {
+	    income: ['Salary', 'Freelance', 'Investments', 'Other'],
+	    expense: ['Rent', 'Groceries', 'Utilities', 'Other'],
+	}
+
 	const handleSubmit = async () => {
-		await addTransaction(type.value, category.value, amount.value, date_transaction.value)
-		// Reset form fields
-		type.value = 'income'
-		category.value = ''
-		amount.value = 0
-		date_transaction.value = ''
+	    const finalCategory = category.value === 'Custom' ? customCategory.value : category.value
+	    await addTransaction(type.value, finalCategory, amount.value, date_transaction.value)
+	    // Reset form fields
+	    type.value = 'income'
+	    category.value = ''
+	    customCategory.value = ''
+	    amount.value = 0
+	    date_transaction.value = ''
 	}
 </script>
+
 <template>
 	<MainHeader />
 	<div class="flex flex-col w-full h-fit px-4 pt-6">
@@ -41,7 +52,7 @@
 						<Button
 							variant="secondary"
 							class="py-4-5 ml-4">
-							<LucideCirclePlus color="#22C55E" /> Add Transaction
+							<LucideSquarePlus color="#22C55E" /> Add Transaction
 						</Button>
 					</PopoverTrigger>
 					<PopoverContent class="w-80">
@@ -58,17 +69,34 @@
 									<select
 										v-model="type"
 										id="type"
-										class="col-span-2 h-8">
+										class="col-span-2 h-8 flex w-full rounded-md border border-input bg-background text-sm ring-offset-background">
 										<option value="income">Income</option>
 										<option value="expense">Expense</option>
 									</select>
 								</div>
 								<div class="grid grid-cols-3 items-center gap-4">
 									<Label for="category">Category</Label>
-									<Input
-										id="category"
-										type="text"
+									<select
 										v-model="category"
+										id="category"
+										class="col-span-2 h-8 flex w-full rounded-md border border-input bg-background text-sm ring-offset-background">
+										<option
+											v-for="cat in predefinedCategories[type]"
+											:key="cat"
+											:value="cat"
+											>{{ cat }}</option
+										>
+										<option value="Custom">Custom</option>
+									</select>
+								</div>
+								<div
+									v-if="category === 'Custom'"
+									class="grid grid-cols-3 items-center gap-4">
+									<Label for="customCategory">Custom Category</Label>
+									<Input
+										id="customCategory"
+										type="text"
+										v-model="customCategory"
 										class="col-span-2 h-8" />
 								</div>
 								<div class="grid grid-cols-3 items-center gap-4">
