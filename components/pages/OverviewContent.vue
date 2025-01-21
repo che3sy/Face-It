@@ -10,11 +10,10 @@
 	import { BarChart } from '@/components/ui/chart-bar'
 	import { useFinancialData } from '@/composables/useFinancialData'
 
-	import { ref, watchEffect } from 'vue'
-
 	const { getIncome, getExpenses, getBalance, getWeeklyData, getRecentTransactions, getTopCategories } = useFinancialData()
 	import { Separator } from '@/components/ui/separator'
 
+	const isLoading = ref(true)
 	const income = ref(0)
 	const expenses = ref(0)
 	const balance = ref(0)
@@ -31,15 +30,20 @@
 	const expensesChange = ref(0)
 	const balanceChange = ref(0)
 
-	const refreshData = () => {
+	   const refreshData = async () => {
+	       isLoading.value = true
+	       recentTransactions.value = await getRecentTransactions()
 	       income.value = getIncome()
 	       expenses.value = getExpenses()
 	       balance.value = getBalance()
-	       weeklyData.value = getWeeklyData()
-	       recentTransactions.value = getRecentTransactions()
 	       const { topIncomeCategory: incomeCat, topExpenseCategory: expenseCat } = getTopCategories()
 	       topIncomeCategory.value = incomeCat
 	       topExpenseCategory.value = expenseCat
+	       isLoading.value = false
+
+	       weeklyData.value = getWeeklyData()
+
+
 
 	       if (weeklyData.value.length > 1) {
 	           lastWeekIncome.value = weeklyData.value[weeklyData.value.length - 2].income
@@ -56,7 +60,15 @@
 	       }
 	   }
 
-	   watchEffect(refreshData)
+	   onMounted(() => {
+	       refreshData()
+	   })
+	   watch(
+	       () => [useDateRangeStore().start, useDateRangeStore().end],
+	       () => {
+	           refreshData()
+	       }
+	   )
 </script>
 
 <template>
@@ -137,7 +149,7 @@
 				<div>
 					<h5 class="font-medium">Income</h5>
 					<p
-						class="text-primary"
+						class="text-primary font-bold"
 						v-if="topIncomeCategory">
 						{{ topIncomeCategory[0] }}: ${{ topIncomeCategory[1] }}
 					</p>
@@ -146,7 +158,7 @@
 				<div class="mt-4">
 					<h5 class="font-medium">Expenses</h5>
 					<p
-						class="text-destructive"
+						class="text-destructive font-bold"
 						v-if="topExpenseCategory">
 						{{ topExpenseCategory[0] }}: ${{ topExpenseCategory[1] }}
 					</p>
@@ -162,6 +174,7 @@
 			</CardHeader>
 			<CardContent class="pl-2">
 				<BarChart
+					v-if="!isLoading"
 					index="name"
 					:data="weeklyData"
 					:categories="['income', 'expenses']"

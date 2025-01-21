@@ -11,6 +11,7 @@
 
 	import { useFinancialData } from '@/composables/useFinancialData'
 
+
 	const { addTransaction } = useFinancialData()
 
 	const type = ref('income')
@@ -128,7 +129,10 @@
 			<TabsContent value="Overview">
 				<PagesOverviewContent />
 			</TabsContent>
-			<TabsContent value="Analytics"> Change your password here. </TabsContent>
+			<TabsContent value="Analytics">
+				<PagesAnalytics />
+			</TabsContent>
+
 			<TabsContent value="Reports"> View your reports here. </TabsContent>
 			<TabsContent value="Notifications">
 				Manage your notifications here.

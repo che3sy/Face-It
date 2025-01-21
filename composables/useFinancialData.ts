@@ -5,6 +5,7 @@ export const useFinancialData = () => {
 			category: string;
 			amount: number;
 			date_transaction: string;
+			date_created: string;
 		};
 	}>();
 	const dateRangeStore = useDateRangeStore();
@@ -14,6 +15,7 @@ export const useFinancialData = () => {
 		category: string;
 		amount: number;
 		date_transaction: string;
+		date_created: string;
 	}
 
 	const transactions = ref<Transaction[]>([]);
@@ -59,7 +61,10 @@ export const useFinancialData = () => {
 	const getIncome = () => income.value;
 	const getExpenses = () => expenses.value;
 	const getBalance = () => balance.value;
-	const getRecentTransactions = () => transactions.value;
+	const getRecentTransactions = async (): Promise<Transaction[]> => {
+		await fetchTransactions();
+		return transactions.value;
+	};
 
 	const getWeeklyData = () => {
 		const weeklyData = [];
@@ -144,6 +149,36 @@ export const useFinancialData = () => {
 		await fetchTransactions();
 	};
 
+	const editTransaction = async (
+		id: number,
+		updatedTransaction: Partial<Transaction>
+	) => {
+		const { data, error } = await client
+			.from("data")
+			.update(updatedTransaction)
+			.eq("id", id);
+
+		if (error) {
+			console.error("Error editing transaction:", error);
+			return;
+		}
+
+		// Fetch the updated transactions after editing the transaction
+		await fetchTransactions();
+	};
+
+	const deleteTransaction = async (id: number) => {
+		const { data, error } = await client.from("data").delete().eq("id", id);
+
+		if (error) {
+			console.error("Error deleting transaction:", error);
+			return;
+		}
+
+		// Fetch the updated transactions after deleting the transaction
+		await fetchTransactions();
+	};
+
 	const getTopCategories = () => {
 		const incomeCategories = transactions.value
 			.filter((transaction) => transaction.type === "income")
@@ -185,5 +220,7 @@ export const useFinancialData = () => {
 		getRecentTransactions,
 		addTransaction,
 		getTopCategories,
+		editTransaction,
+		deleteTransaction,
 	};
 };
