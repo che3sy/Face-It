@@ -52,10 +52,21 @@
 
 <template>
 	<div class="w-full min-h-screen flex items-center justify-center">
-		<Card class="w-[350px]">
+		<div
+			class="absolute inset-0 h-full w-full bg-background bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_60%,transparent_100%)] z-0"></div>
+
+		<Card class="w-[350px] z-10">
 			<CardHeader>
-				<CardTitle>Login</CardTitle>
-				<CardDescription>Sign in to your account</CardDescription>
+				<div class="flex flex-row">
+					<img
+						src="public\favicon.ico"
+						alt="Logo"
+						class="w-12 h-12" />
+					<div class="ml-4 mt-2">
+						<CardTitle>Login</CardTitle>
+						<CardDescription>Sign in to your account</CardDescription>
+					</div>
+				</div>
 			</CardHeader>
 			<CardContent>
 				<form @submit="onSubmit">
@@ -89,8 +100,15 @@
 							<FormMessage />
 						</FormItem>
 					</FormField>
-					<CardFooter class="flex justify-end pr-4 pt-4 pb-4">
-						<Button type="submit">Sign In</Button>
+					<CardFooter class="flex justify-between pr-4 pt-6 pb-4">
+						<Button
+							type="button"
+							variant="outline"
+							class="-ml-6"
+							@click="navigateTo('/signUp')"
+							>Sign Up</Button
+						>
+						<Button type="submit">Log In</Button>
 					</CardFooter>
 				</form>
 			</CardContent>
