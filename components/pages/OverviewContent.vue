@@ -1,74 +1,77 @@
 <script type="ts" setup>
-	import {
-	  Card,
-	  CardContent,
-	  CardDescription,
-	  CardFooter,
-	  CardHeader,
-	  CardTitle,
-	} from '@/components/ui/card'
-	import { BarChart } from '@/components/ui/chart-bar'
-	import { useFinancialData } from '@/composables/useFinancialData'
+		import {
+		  Card,
+		  CardContent,
+		  CardDescription,
+		  CardFooter,
+		  CardHeader,
+		  CardTitle,
+		} from '@/components/ui/card'
+		import { BarChart } from '@/components/ui/chart-bar'
+		import { useFinancialData } from '@/composables/useFinancialData'
 
-	const { getIncome, getExpenses, getBalance, getWeeklyData, getRecentTransactions, getTopCategories } = useFinancialData()
-	import { Separator } from '@/components/ui/separator'
+		const { getIncome, getExpenses, getBalance, getWeeklyData, getRecentTransactions, getTopCategories } = useFinancialData()
+		import { Separator } from '@/components/ui/separator'
 
-	const isLoading = ref(true)
-	const income = ref(0)
-	const expenses = ref(0)
-	const balance = ref(0)
-	const weeklyData = ref([])
-	const recentTransactions = ref([])
-	   const topIncomeCategory = ref(null)
-	   const topExpenseCategory = ref(null)
+		const isLoading = ref(true)
+		const income = ref(0)
+		const expenses = ref(0)
+		const balance = ref(0)
+		const weeklyData = ref([])
+		const recentTransactions = ref([])
+		   const topIncomeCategory = ref(null)
+		   const topExpenseCategory = ref(null)
 
-	const lastWeekIncome = ref(0)
-	const lastWeekExpenses = ref(0)
-	const lastWeekBalance = ref(0)
+		const lastWeekIncome = ref(0)
+		const lastWeekExpenses = ref(0)
+		const lastWeekBalance = ref(0)
 
-	const incomeChange = ref(0)
-	const expensesChange = ref(0)
-	const balanceChange = ref(0)
+		const incomeChange = ref(0)
+		const expensesChange = ref(0)
+		const balanceChange = ref(0)
 
-	   const refreshData = async () => {
-	       isLoading.value = true
-	       recentTransactions.value = await getRecentTransactions()
-	       income.value = getIncome()
-	       expenses.value = getExpenses()
-	       balance.value = getBalance()
-	       const { topIncomeCategory: incomeCat, topExpenseCategory: expenseCat } = getTopCategories()
-	       topIncomeCategory.value = incomeCat
-	       topExpenseCategory.value = expenseCat
-	       isLoading.value = false
+		   const refreshData = async () => {
+		       isLoading.value = true
+		       recentTransactions.value = await getRecentTransactions()
+		       income.value = getIncome()
+		       expenses.value = getExpenses()
+		       balance.value = getBalance()
+		       const { topIncomeCategory: incomeCat, topExpenseCategory: expenseCat } = getTopCategories()
+		       topIncomeCategory.value = incomeCat
+		       topExpenseCategory.value = expenseCat
+		       isLoading.value = false
 
-	       weeklyData.value = getWeeklyData()
+		       weeklyData.value = getWeeklyData()
 
 
 
-	       if (weeklyData.value.length > 1) {
-	           lastWeekIncome.value = weeklyData.value[weeklyData.value.length - 2].income
-	           lastWeekExpenses.value = weeklyData.value[weeklyData.value.length - 2].expenses
-	           lastWeekBalance.value = lastWeekIncome.value - lastWeekExpenses.value
+		       if (weeklyData.value.length > 1) {
+		           lastWeekIncome.value = weeklyData.value[weeklyData.value.length - 2].income
+		           lastWeekExpenses.value = weeklyData.value[weeklyData.value.length - 2].expenses
+		           lastWeekBalance.value = lastWeekIncome.value - lastWeekExpenses.value
 
-	           incomeChange.value = lastWeekIncome.value !== 0 ? ((income.value - lastWeekIncome.value) / lastWeekIncome.value) * 100 : 0
-	           expensesChange.value = lastWeekExpenses.value !== 0 ? ((expenses.value - lastWeekExpenses.value) / lastWeekExpenses.value) * 100 : 0
-	           balanceChange.value = lastWeekBalance.value !== 0 ? ((balance.value - lastWeekBalance.value) / lastWeekBalance.value) * 100 : 0
-	       } else {
-	           incomeChange.value = 0
-	           expensesChange.value = 0
-	           balanceChange.value = 0
-	       }
-	   }
+		           incomeChange.value = lastWeekIncome.value !== 0 ? ((income.value - lastWeekIncome.value) / lastWeekIncome.value) * 100 : 0
+		           expensesChange.value = lastWeekExpenses.value !== 0 ? ((expenses.value - lastWeekExpenses.value) / lastWeekExpenses.value) * 100 : 0
+		           balanceChange.value = lastWeekBalance.value !== 0 ? ((balance.value - lastWeekBalance.value) / lastWeekBalance.value) * 100 : 0
+		       } else {
+		           incomeChange.value = 0
+		           expensesChange.value = 0
+		           balanceChange.value = 0
+		       }
+		   }
 
-	   onMounted(() => {
-	       refreshData()
-	   })
-	   watch(
-	       () => [useDateRangeStore().start, useDateRangeStore().end],
-	       () => {
-	           refreshData()
-	       }
-	   )
+		   onMounted(() => {
+		       refreshData()
+		   })
+		   watch(
+		       () => [useDateRangeStore().start, useDateRangeStore().end],
+		       () => {
+		           refreshData()
+		       }
+		   )
+		   const lastFiveTransactions = computed(() => {
+	    return recentTransactions.value.slice(0, 5);
+	});
 </script>
 
 <template>
@@ -192,13 +195,13 @@
 			<CardHeader>
 				<CardTitle>Recent Transactions</CardTitle>
 				<CardDescription>
-					You made {{ recentTransactions.length }} transactions in this period.
+					{{ lastFiveTransactions.length }} recent transactions in this period.
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
 				<ul>
 					<li
-						v-for="transaction in recentTransactions"
+						v-for="transaction in lastFiveTransactions"
 						:key="transaction.id"
 						class="mb-2">
 						<div

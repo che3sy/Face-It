@@ -13,7 +13,27 @@ interface Transaction {
 import { ArrowUpDown } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 
+import { Checkbox } from "@/components/ui/checkbox";
+
 export const columns: ColumnDef<Transaction>[] = [
+	{
+		id: "select",
+		header: ({ table }) =>
+			h(Checkbox, {
+				checked: table.getIsAllPageRowsSelected(),
+				"onUpdate:checked": (value: boolean) =>
+					table.toggleAllPageRowsSelected(!!value),
+				ariaLabel: "Select all",
+			}),
+		cell: ({ row }) =>
+			h(Checkbox, {
+				checked: row.getIsSelected(),
+				"onUpdate:checked": (value: boolean) => row.toggleSelected(!!value),
+				ariaLabel: "Select row",
+			}),
+		enableSorting: false,
+		enableHiding: false,
+	},
 	{
 		accessorKey: "type",
 		header: ({ column }) =>
@@ -113,6 +133,7 @@ export const columns: ColumnDef<Transaction>[] = [
 				{ class: "relative" },
 				h(DropdownAction, {
 					transaction,
+					onExpand: row.toggleExpanded,
 				})
 			);
 		},

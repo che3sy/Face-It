@@ -44,9 +44,9 @@
 			<div class="flex flex-row items-center">
 				<TabsList>
 					<TabsTrigger value="Overview"> Overview </TabsTrigger>
+					<TabsTrigger value="Table"> Table </TabsTrigger>
 					<TabsTrigger value="Analytics"> Analytics </TabsTrigger>
 					<TabsTrigger value="Reports"> Reports </TabsTrigger>
-					<TabsTrigger value="Notifications"> Notifications </TabsTrigger>
 				</TabsList>
 				<Popover>
 					<PopoverTrigger as-child>
@@ -129,12 +129,12 @@
 			<TabsContent value="Overview">
 				<PagesOverviewContent />
 			</TabsContent>
-			<TabsContent value="Analytics">
-				<PagesAnalytics />
+			<TabsContent value="Table">
+				<PagesTable />
 			</TabsContent>
 
-			<TabsContent value="Reports"> View your reports here. </TabsContent>
-			<TabsContent value="Notifications">
+			<TabsContent value="Analytics"> View your reports here. </TabsContent>
+			<TabsContent value="Reports">
 				Manage your notifications here.
 			</TabsContent>
 		</Tabs>

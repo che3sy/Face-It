@@ -22,6 +22,10 @@
 		};
 	}>();
 
+	defineEmits<{
+		(e: "expand"): void;
+	}>();
+
 	const { editTransaction, deleteTransaction } = useFinancialData();
 
 	function copy(id: number) {
@@ -60,6 +64,8 @@
 			<DropdownMenuItem @click="handleDelete"
 				>Delete Transaction</DropdownMenuItem
 			>
+			<DropdownMenuSeparator />
+			<DropdownMenuItem @click="$emit('expand')"> Expand </DropdownMenuItem>
 		</DropdownMenuContent>
 	</DropdownMenu>
 </template>
