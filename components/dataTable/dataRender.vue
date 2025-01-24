@@ -2,7 +2,7 @@
 	import { onMounted, ref } from "vue";
 	import { columns } from "./columns";
 	import DataTable from "./DataTable.vue";
-	import { useFinancialData } from "@/composables/useFinancialData";
+
 	interface Transaction {
 		id: number;
 		type: "income" | "expense";
@@ -13,14 +13,21 @@
 	}
 	const { getRecentTransactions } = useFinancialData();
 	const data = ref<Transaction[]>([]);
+	const dateRangeStore = useDateRangeStore();
+	const triggerStore = useTriggerStore();
 
-	onMounted(async () => {
+	const fetchData = async () => {
 		const recentTransactions = await getRecentTransactions();
 		data.value = recentTransactions as Transaction[];
 		if (data.value.length === 0) {
 			console.log("Data is empty");
 		}
-	});
+	};
+
+	onMounted(fetchData);
+
+	watch(() => [dateRangeStore.start, dateRangeStore.end], fetchData);
+	watch(() => triggerStore.trigger, fetchData);
 </script>
 
 <template>

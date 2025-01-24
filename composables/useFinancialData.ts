@@ -9,6 +9,7 @@ export const useFinancialData = () => {
 		};
 	}>();
 	const dateRangeStore = useDateRangeStore();
+	const triggerStore = useTriggerStore();
 
 	interface Transaction {
 		type: "income" | "expense";
@@ -147,6 +148,7 @@ export const useFinancialData = () => {
 
 		// Fetch the updated transactions after adding the new one
 		await fetchTransactions();
+		triggerStore.toggelTrigger();
 	};
 
 	const editTransaction = async (
@@ -155,7 +157,12 @@ export const useFinancialData = () => {
 	) => {
 		const { data, error } = await client
 			.from("data")
-			.update(updatedTransaction)
+			.update({
+				type: updatedTransaction.type,
+				category: updatedTransaction.category,
+				amount: updatedTransaction.amount,
+				date_transaction: updatedTransaction.date_transaction,
+			})
 			.eq("id", id);
 
 		if (error) {
@@ -165,6 +172,7 @@ export const useFinancialData = () => {
 
 		// Fetch the updated transactions after editing the transaction
 		await fetchTransactions();
+		triggerStore.toggelTrigger();
 	};
 
 	const deleteTransaction = async (id: number) => {
@@ -177,6 +185,7 @@ export const useFinancialData = () => {
 
 		// Fetch the updated transactions after deleting the transaction
 		await fetchTransactions();
+		triggerStore.toggelTrigger();
 	};
 
 	const getTopCategories = () => {

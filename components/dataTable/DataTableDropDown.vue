@@ -11,6 +11,41 @@
 	import { MoreHorizontal } from "lucide-vue-next";
 	import { useFinancialData } from "@/composables/useFinancialData";
 
+	import {
+		Dialog,
+		DialogContent,
+		DialogDescription,
+		DialogFooter,
+		DialogHeader,
+		DialogTitle,
+		DialogTrigger,
+	} from "@/components/ui/dialog";
+	import {
+		Form,
+		FormControl,
+		FormDescription,
+		FormField,
+		FormItem,
+		FormLabel,
+		FormMessage,
+	} from "@/components/ui/form";
+
+	import { Input } from "@/components/ui/input";
+	import { toast } from "@/components/ui/toast";
+	import { toTypedSchema } from "@vee-validate/zod";
+	import { h } from "vue";
+	import * as z from "zod";
+
+	const formSchema = toTypedSchema(
+		z.object({
+			type: z.enum(["income", "expense"]).optional(),
+			category: z.string().optional(),
+			customCategory: z.string().optional(),
+			amount: z.number().positive().optional(),
+			date_transaction: z.string().optional(),
+		})
+	);
+
 	const props = defineProps<{
 		transaction: {
 			id: number;
@@ -32,11 +67,30 @@
 		navigator.clipboard.writeText(id.toString());
 	}
 
-	async function handleEdit() {
-		// Implement your edit logic here
-		await editTransaction(props.transaction.id, {
-			category: "Updated Category",
-		});
+	const initialValues = computed(() => ({
+		type: props.transaction.type,
+		category: props.transaction.category,
+		customCategory: props.transaction.customCategory ?? "",
+		amount: props.transaction.amount,
+		date_transaction: props.transaction.date_transaction,
+	}));
+
+	const predefinedCategories = {
+		income: ["Salary", "Freelance", "Investments", "Other", "Custom"],
+		expense: ["Rent", "Groceries", "Utilities", "Other", "Custom"],
+	};
+
+	function onSubmit(values: any) {
+		if (!values.type) values.type = props.transaction.type;
+		if (values.category === "Custom") {
+			values.category =
+				values.customCategory || props.transaction.customCategory;
+		}
+		if (!values.amount) values.amount = props.transaction.amount;
+		if (!values.date_transaction)
+			values.date_transaction = props.transaction.date_transaction;
+
+		editTransaction(props.transaction.id, values);
 	}
 
 	async function handleDelete() {
@@ -45,27 +99,146 @@
 </script>
 
 <template>
-	<DropdownMenu>
-		<DropdownMenuTrigger as-child>
-			<Button
-				variant="ghost"
-				class="w-8 h-8 p-0">
-				<span class="sr-only">Open menu</span>
-				<MoreHorizontal class="w-4 h-4" />
-			</Button>
-		</DropdownMenuTrigger>
-		<DropdownMenuContent align="end">
-			<DropdownMenuLabel>Actions</DropdownMenuLabel>
-			<DropdownMenuItem @click="copy(transaction.id)">
-				Copy Transaction ID
-			</DropdownMenuItem>
-			<DropdownMenuSeparator />
-			<DropdownMenuItem @click="handleEdit">Edit Transaction</DropdownMenuItem>
-			<DropdownMenuItem @click="handleDelete"
-				>Delete Transaction</DropdownMenuItem
-			>
-			<DropdownMenuSeparator />
-			<DropdownMenuItem @click="$emit('expand')"> Expand </DropdownMenuItem>
-		</DropdownMenuContent>
-	</DropdownMenu>
+	<Form
+		v-slot="{ handleSubmit }"
+		as=""
+		keep-values
+		:validation-schema="formSchema">
+		<Dialog>
+			<DropdownMenu>
+				<DropdownMenuTrigger as-child>
+					<Button
+						variant="ghost"
+						class="w-8 h-8 p-0">
+						<span class="sr-only">Open menu</span>
+						<MoreHorizontal class="w-4 h-4" />
+					</Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align="end">
+					<DropdownMenuLabel>Actions</DropdownMenuLabel>
+					<DropdownMenuItem @click="copy(transaction.id)">
+						Copy Transaction ID
+					</DropdownMenuItem>
+					<DropdownMenuSeparator />
+
+					<DialogTrigger as-child>
+						<DropdownMenuItem>Edit Transaction</DropdownMenuItem>
+					</DialogTrigger>
+
+					<DropdownMenuItem @click="handleDelete"
+						>Delete Transaction</DropdownMenuItem
+					>
+					<DropdownMenuSeparator />
+					<DropdownMenuItem @click="$emit('expand')"> Expand </DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>
+			<DialogContent class="sm:max-w-[425px]">
+				<DialogHeader>
+					<DialogTitle>Edit Transaction</DialogTitle>
+					<DialogDescription>
+						Make changes to your transaction here. Click save when you're done.
+					</DialogDescription>
+				</DialogHeader>
+				<form
+					id="dialogForm"
+					@submit="handleSubmit($event, onSubmit)">
+					<FormField
+						name="type"
+						v-slot="{ componentField }">
+						<FormItem>
+							<FormLabel>Type</FormLabel>
+							<FormControl>
+								<select
+									v-bind="componentField"
+									class="col-span-2 h-8 flex w-full rounded-md border border-input bg-background text-sm ring-offset-background">
+									>
+									<option value="income">Income</option>
+									<option value="expense">Expense</option>
+								</select>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					</FormField>
+
+					<FormField
+						name="category"
+						v-slot="{ componentField, value }">
+						<FormItem>
+							<FormLabel>Category</FormLabel>
+							<FormControl>
+								<select
+									v-bind="componentField"
+									class="col-span-2 h-8 flex w-full rounded-md border border-input bg-background text-sm ring-offset-background">
+									>
+									<option
+										v-for="cat in predefinedCategories[props.transaction.type]"
+										:key="cat"
+										:value="cat">
+										{{ cat }}
+									</option>
+								</select>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+						<FormField
+							v-if="value === 'Custom'"
+							name="customCategory"
+							v-slot="{ componentField }">
+							<FormItem>
+								<FormLabel>Custom Category</FormLabel>
+								<FormControl>
+									<Input
+										type="text"
+										v-bind="componentField"
+										:placeholder="
+											props.transaction.customCategory || 'Custom Category'
+										" />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						</FormField>
+					</FormField>
+
+					<FormField
+						name="amount"
+						v-slot="{ componentField }">
+						<FormItem>
+							<FormLabel>Amount</FormLabel>
+							<FormControl>
+								<Input
+									type="number"
+									v-bind="componentField"
+									:placeholder="props.transaction.amount.toString()" />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					</FormField>
+
+					<FormField
+						name="date_transaction"
+						v-slot="{ componentField }">
+						<FormItem>
+							<FormLabel>Date</FormLabel>
+							<FormControl>
+								<Input
+									type="date"
+									v-bind="componentField"
+									:placeholder="props.transaction.date_transaction" />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					</FormField>
+				</form>
+				<DialogFooter>
+					<DialogClose as-child>
+						<Button
+							type="submit"
+							form="dialogForm">
+							Save Changes
+						</Button>
+					</DialogClose>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	</Form>
 </template>

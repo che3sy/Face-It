@@ -21,6 +21,8 @@
 		dateStyle: "medium",
 	});
 
+	const popoverOpen = ref(false);
+
 	const value = ref<DateRange>({
 		start: undefined,
 		end: undefined,
@@ -38,6 +40,7 @@
 			Math.floor(startEpoch / 1000),
 			Math.floor(endEpoch / 1000)
 		);
+		popoverOpen.value = false;
 	});
 	watch(
 		() => [dateRangeStore.start, dateRangeStore.end],
@@ -62,7 +65,7 @@
 
 <template>
 	<div :class="cn('grid gap-2', $attrs.class ?? '')">
-		<Popover>
+		<Popover v-model:open="popoverOpen">
 			<PopoverTrigger as-child>
 				<Button
 					id="date"
