@@ -154,7 +154,7 @@
 				class="flex flex-row items-center justify-between space-y-0 pb-2">
 				<CardTitle class="text-4xl font-bold flex flex-row items-center">
 					Balance:
-					<div class="ml-2"> ${{ balance }} </div>
+					<div class="ml-2"> ${{ balance.toFixed(2) }} </div>
 				</CardTitle>
 			</CardHeader>
 			<CardContent>

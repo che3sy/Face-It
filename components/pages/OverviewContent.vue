@@ -88,7 +88,7 @@
 				<LucideDollarSign class="h-4 w-4 text-muted-foreground" />
 			</CardHeader>
 			<CardContent>
-				<div class="text-2xl font-bold"> ${{ balance }} </div>
+				<div class="text-2xl font-bold"> ${{ balance.toFixed(2) }} </div>
 				<p
 					class="text-xs"
 					:class="
@@ -110,7 +110,9 @@
 				<LucideTrendingUp class="h-4 w-4 text-primary" />
 			</CardHeader>
 			<CardContent>
-				<div class="text-2xl font-bold text-primary"> +{{ income }} </div>
+				<div class="text-2xl font-bold text-primary">
+					+{{ income.toFixed(2) }}
+				</div>
 				<p
 					class="text-xs"
 					:class="
@@ -132,7 +134,9 @@
 				<LucideTrendingDown class="h-4 w-4 text-destructive" />
 			</CardHeader>
 			<CardContent>
-				<div class="text-2xl font-bold text-destructive"> -{{ expenses }} </div>
+				<div class="text-2xl font-bold text-destructive">
+					-{{ expenses.toFixed(2) }}
+				</div>
 				<p
 					class="text-xs"
 					:class="
