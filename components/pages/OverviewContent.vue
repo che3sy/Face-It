@@ -10,22 +10,18 @@
 		import { BarChart } from '@/components/ui/chart-bar'
 		import { useFinancialData } from '@/composables/useFinancialData'
 
-		const { getIncome, getExpenses, getBalance, getWeeklyData, getRecentTransactions, getTopCategories } = useFinancialData()
+		const { getIncome, getExpenses, getBalance, getPeriodData, getRecentTransactions, getTopCategories } = useFinancialData()
 		import { Separator } from '@/components/ui/separator'
 
 		const isLoading = ref(true)
 		const income = ref(0)
 		const expenses = ref(0)
 		const balance = ref(0)
-		const weeklyData = ref([])
+		const periodData = ref([])
 		const recentTransactions = ref([])
-		   const topIncomeCategory = ref(null)
-		   const topExpenseCategory = ref(null)
+		const topCategory = ref(null)
 
-		const lastWeekIncome = ref(0)
-		const lastWeekExpenses = ref(0)
-		const lastWeekBalance = ref(0)
-
+		const periodName = ref('week')
 		const incomeChange = ref(0)
 		const expensesChange = ref(0)
 		const balanceChange = ref(0)
@@ -36,28 +32,31 @@
 		       income.value = getIncome()
 		       expenses.value = getExpenses()
 		       balance.value = getBalance()
-		       const { topIncomeCategory: incomeCat, topExpenseCategory: expenseCat } = getTopCategories()
-		       topIncomeCategory.value = incomeCat
-		       topExpenseCategory.value = expenseCat
+			   topCategory.value = getTopCategories()
+			   periodName.value = useDateRangeStore().periodName
+
 		       isLoading.value = false
 
-		       weeklyData.value = getWeeklyData()
+		       periodData.value = getPeriodData()
 
 
 
-		       if (weeklyData.value.length > 1) {
-		           lastWeekIncome.value = weeklyData.value[weeklyData.value.length - 2].income
-		           lastWeekExpenses.value = weeklyData.value[weeklyData.value.length - 2].expenses
-		           lastWeekBalance.value = lastWeekIncome.value - lastWeekExpenses.value
+			   if (periodData.value.length > 1) {
+	       const lastPeriod = periodData.value[periodData.value.length - 1]
+	       const previousPeriod = periodData.value[periodData.value.length - 2]
 
-		           incomeChange.value = lastWeekIncome.value !== 0 ? ((income.value - lastWeekIncome.value) / lastWeekIncome.value) * 100 : 0
-		           expensesChange.value = lastWeekExpenses.value !== 0 ? ((expenses.value - lastWeekExpenses.value) / lastWeekExpenses.value) * 100 : 0
-		           balanceChange.value = lastWeekBalance.value !== 0 ? ((balance.value - lastWeekBalance.value) / lastWeekBalance.value) * 100 : 0
-		       } else {
-		           incomeChange.value = 0
-		           expensesChange.value = 0
-		           balanceChange.value = 0
-		       }
+	       incomeChange.value = previousPeriod.income !== 0 ? ((lastPeriod.income - previousPeriod.income) / previousPeriod.income) * 100 : 0
+	       expensesChange.value = previousPeriod.expenses !== 0 ? ((lastPeriod.expenses - previousPeriod.expenses) / previousPeriod.expenses) * 100 : 0
+
+	       const lastPeriodBalance = lastPeriod.income - lastPeriod.expenses
+	       const previousPeriodBalance = previousPeriod.income - previousPeriod.expenses
+
+	       balanceChange.value = previousPeriodBalance !== 0 ? ((lastPeriodBalance - previousPeriodBalance) / Math.abs(previousPeriodBalance)) * 100 : 0
+	   } else {
+	       incomeChange.value = 0
+	       expensesChange.value = 0
+	       balanceChange.value = 0
+	   }
 		   }
 
 		   onMounted(() => {
@@ -69,8 +68,14 @@
 		           refreshData()
 		       }
 		   )
+		   watch(
+		       () => useDateRangeStore().period,
+		       () => {
+		           refreshData()
+		       }
+		   )
 		   const lastFiveTransactions = computed(() => {
-	    return recentTransactions.value.slice(0, 5);
+	   	return recentTransactions.value.slice(0, 5);
 	});
 </script>
 
@@ -79,7 +84,7 @@
 		<Card>
 			<CardHeader
 				class="flex flex-row items-center justify-between space-y-0 pb-2">
-				<CardTitle class="text-sm font-medium"> Total Revenue </CardTitle>
+				<CardTitle class="text-sm font-medium"> Balance </CardTitle>
 				<LucideDollarSign class="h-4 w-4 text-muted-foreground" />
 			</CardHeader>
 			<CardContent>
@@ -94,7 +99,7 @@
 							: 'text-gray-400'
 					">
 					{{ balanceChange >= 0 ? "+" : "" }}{{ balanceChange.toFixed(1) }}%
-					from last week
+					from last {{ periodName }}
 				</p>
 			</CardContent>
 		</Card>
@@ -116,7 +121,7 @@
 							: 'text-gray-400'
 					">
 					{{ incomeChange >= 0 ? "+" : "" }}{{ incomeChange.toFixed(1) }}% from
-					last week
+					last {{ periodName }}
 				</p>
 			</CardContent>
 		</Card>
@@ -131,41 +136,31 @@
 				<p
 					class="text-xs"
 					:class="
-						expensesChange > 0
+						expensesChange < 0
 							? 'text-primary'
-							: expensesChange < 0
+							: expensesChange > 0
 							? 'text-destructive'
 							: 'text-gray-400'
 					">
 					{{ expensesChange >= 0 ? "+" : "" }}{{ expensesChange.toFixed(1) }}%
-					from last week
+					from last {{ periodName }}
 				</p>
 			</CardContent>
 		</Card>
 		<Card>
 			<CardHeader
 				class="flex flex-row items-center justify-between space-y-0 pb-2">
-				<CardTitle class="text-sm font-medium"> Top Categories </CardTitle>
+				<CardTitle class="text-sm font-medium"> Top Category </CardTitle>
 				<LucidePieChart class="h-4 w-4 text-muted-foreground" />
 			</CardHeader>
 			<CardContent>
-				<div>
-					<h5 class="font-medium">Income</h5>
-					<p
-						class="text-primary font-bold"
-						v-if="topIncomeCategory">
-						{{ topIncomeCategory[0] }}: ${{ topIncomeCategory[1] }}
-					</p>
-					<p v-else>No income data</p>
+				<div v-if="topCategory">
+					<p class="font-bold text-2xl"
+						>{{ topCategory[0] }}: ${{ topCategory[1] }}</p
+					>
 				</div>
-				<div class="mt-4">
-					<h5 class="font-medium">Expenses</h5>
-					<p
-						class="text-destructive font-bold"
-						v-if="topExpenseCategory">
-						{{ topExpenseCategory[0] }}: ${{ topExpenseCategory[1] }}
-					</p>
-					<p v-else>No expense data</p>
+				<div v-else>
+					<p>No category data</p>
 				</div>
 			</CardContent>
 		</Card>
@@ -173,13 +168,13 @@
 	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-4">
 		<Card class="col-span-4">
 			<CardHeader>
-				<CardTitle>Overview</CardTitle>
+				<CardTitle>Income vs. Expenses </CardTitle>
 			</CardHeader>
 			<CardContent class="pl-2">
 				<BarChart
 					v-if="!isLoading"
 					index="name"
-					:data="weeklyData"
+					:data="periodData"
 					:categories="['income', 'expenses']"
 					:y-formatter="
 						(tick, i) => {
@@ -188,7 +183,8 @@
 								: '';
 						}
 					"
-					:rounded-corners="4" />
+					:rounded-corners="4"
+					:colors="['hsl(var(--primary))', 'hsl(var(--destructive))']" />
 			</CardContent>
 		</Card>
 		<Card class="col-span-3">

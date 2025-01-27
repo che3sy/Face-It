@@ -133,9 +133,9 @@
 				<PagesTable />
 			</TabsContent>
 
-			<TabsContent value="Analytics"> View your reports here. </TabsContent>
+			<TabsContent value="Analytics"> <PagesAnalytics /> </TabsContent>
 			<TabsContent value="Reports">
-				Manage your notifications here.
+				<PagesReports />
 			</TabsContent>
 		</Tabs>
 	</div>

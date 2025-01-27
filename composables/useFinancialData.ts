@@ -67,8 +67,8 @@ export const useFinancialData = () => {
 		return transactions.value;
 	};
 
-	const getWeeklyData = () => {
-		const weeklyData = [];
+	const getPeriodData = () => {
+		const periodData = [];
 		const startDate =
 			dateRangeStore.start !== 0
 				? new Date(dateRangeStore.start * 1000)
@@ -82,38 +82,58 @@ export const useFinancialData = () => {
 				: new Date(transactions.value[0]?.date_transaction || Date.now());
 		const currentDate = new Date(startDate);
 
-		while (currentDate <= endDate) {
-			const weekEnd = new Date(currentDate);
-			weekEnd.setDate(weekEnd.getDate() + 6);
+		const period = dateRangeStore.period;
 
-			const weekIncome = transactions.value
+		const getNextDate = (date: Date) => {
+			const newDate = new Date(date);
+			switch (period) {
+				case "daily":
+					newDate.setDate(newDate.getDate() + 1);
+					break;
+				case "weekly":
+					newDate.setDate(newDate.getDate() + 7);
+					break;
+				case "monthly":
+					newDate.setMonth(newDate.getMonth() + 1);
+					break;
+				case "yearly":
+					newDate.setFullYear(newDate.getFullYear() + 1);
+					break;
+			}
+			return newDate;
+		};
+
+		while (currentDate <= endDate) {
+			const nextDate = getNextDate(currentDate);
+
+			const periodIncome = transactions.value
 				.filter(
 					(transaction) =>
 						transaction.type === "income" &&
 						new Date(transaction.date_transaction) >= currentDate &&
-						new Date(transaction.date_transaction) <= weekEnd
+						new Date(transaction.date_transaction) < nextDate
 				)
 				.reduce((sum, transaction) => sum + transaction.amount, 0);
 
-			const weekExpenses = transactions.value
+			const periodExpenses = transactions.value
 				.filter(
 					(transaction) =>
 						transaction.type === "expense" &&
 						new Date(transaction.date_transaction) >= currentDate &&
-						new Date(transaction.date_transaction) <= weekEnd
+						new Date(transaction.date_transaction) < nextDate
 				)
 				.reduce((sum, transaction) => sum + transaction.amount, 0);
 
-			weeklyData.push({
-				name: `${currentDate.toLocaleDateString()} - ${weekEnd.toLocaleDateString()}`,
-				income: weekIncome,
-				expenses: weekExpenses,
+			periodData.push({
+				name: `${currentDate.toLocaleDateString()} - ${nextDate.toLocaleDateString()}`,
+				income: periodIncome,
+				expenses: periodExpenses,
 			});
 
-			currentDate.setDate(currentDate.getDate() + 7);
+			currentDate.setTime(nextDate.getTime());
 		}
 
-		return weeklyData;
+		return periodData;
 	};
 
 	const addTransaction = async (
@@ -189,7 +209,21 @@ export const useFinancialData = () => {
 	};
 
 	const getTopCategories = () => {
-		const incomeCategories = transactions.value
+		const categories = transactions.value.reduce((acc, transaction) => {
+			acc[transaction.category] =
+				(acc[transaction.category] || 0) + transaction.amount;
+			return acc;
+		}, {} as Record<string, number>);
+
+		const topCategory = Object.entries(categories).sort(
+			(a, b) => b[1] - a[1]
+		)[0];
+
+		return topCategory;
+	};
+
+	const getIncomeCategories = () => {
+		const incomeCategories: Record<string, number> = transactions.value
 			.filter((transaction) => transaction.type === "income")
 			.reduce((acc, transaction) => {
 				acc[transaction.category] =
@@ -197,7 +231,22 @@ export const useFinancialData = () => {
 				return acc;
 			}, {} as Record<string, number>);
 
-		const expenseCategories = transactions.value
+		const data = Object.entries(incomeCategories).map(([category, amount]) => ({
+			category,
+			amount,
+		}));
+
+		return data.reduce((acc, { category, amount }) => {
+			acc[category] = {
+				name: category,
+				amount: amount,
+			};
+			return acc;
+		}, {} as Record<string, { name: string; amount: number }>);
+	};
+
+	const getExpenseCategories = () => {
+		const expenseCategories: Record<string, number> = transactions.value
 			.filter((transaction) => transaction.type === "expense")
 			.reduce((acc, transaction) => {
 				acc[transaction.category] =
@@ -205,16 +254,66 @@ export const useFinancialData = () => {
 				return acc;
 			}, {} as Record<string, number>);
 
-		const topIncomeCategory = Object.entries(incomeCategories).sort(
-			(a, b) => b[1] - a[1]
-		)[0];
+		const data = Object.entries(expenseCategories).map(
+			([category, amount]) => ({
+				category,
+				amount,
+			})
+		);
 
-		const topExpenseCategory = Object.entries(expenseCategories).sort(
-			(a, b) => b[1] - a[1]
-		)[0];
-
-		return { topIncomeCategory, topExpenseCategory };
+		return data.reduce((acc, { category, amount }) => {
+			acc[category] = {
+				name: category,
+				amount: amount,
+			};
+			return acc;
+		}, {} as Record<string, { name: string; amount: number }>);
 	};
+
+	const predictFutureData = (
+		periodData: { name: string; income: number; expenses: number }[],
+		periods: number
+	) => {
+		const incomeData = periodData.map((d, i) => ({ x: i, y: d.income }));
+		const expensesData = periodData.map((d, i) => ({ x: i, y: d.expenses }));
+		const balanceData = periodData.map((d, i) => ({
+			x: i,
+			y: d.income - d.expenses,
+		}));
+
+		const incomeRegression = linearRegression(incomeData);
+		const expensesRegression = linearRegression(expensesData);
+		const balanceRegression = linearRegression(balanceData);
+
+		const futureData = [];
+		for (let i = 0; i < periods; i++) {
+			const x = periodData.length + i;
+			const nextDate = new Date();
+			switch (dateRangeStore.period) {
+				case "daily":
+					nextDate.setDate(nextDate.getDate() + i + 1);
+					break;
+				case "weekly":
+					nextDate.setDate(nextDate.getDate() + (i + 1) * 7);
+					break;
+				case "monthly":
+					nextDate.setMonth(nextDate.getMonth() + i + 1);
+					break;
+				case "yearly":
+					nextDate.setFullYear(nextDate.getFullYear() + i + 1);
+					break;
+			}
+			futureData.push({
+				name: nextDate.toLocaleDateString(),
+				income: predict(incomeRegression, x),
+				expenses: predict(expensesRegression, x),
+				balance: predict(balanceRegression, x),
+			});
+		}
+
+		return futureData;
+	};
+
 	watch(() => dateRangeStore.start, fetchTransactions);
 	watch(() => dateRangeStore.end, fetchTransactions);
 
@@ -225,11 +324,14 @@ export const useFinancialData = () => {
 		getIncome,
 		getExpenses,
 		getBalance,
-		getWeeklyData,
+		getPeriodData,
 		getRecentTransactions,
 		addTransaction,
 		getTopCategories,
 		editTransaction,
 		deleteTransaction,
+		getIncomeCategories,
+		getExpenseCategories,
+		predictFutureData,
 	};
 };

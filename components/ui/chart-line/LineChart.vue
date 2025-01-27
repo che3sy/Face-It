@@ -1,5 +1,4 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
-	import type { BulletLegendItemInterface } from "@unovis/ts";
 	import type { BaseChartProps } from ".";
 	import {
 		ChartCrosshair,
@@ -7,13 +6,9 @@
 		defaultColors,
 	} from "@/components/ui/chart";
 	import { cn } from "@/lib/utils";
-	import { Axis, GroupedBar, StackedBar } from "@unovis/ts";
-	import {
-		VisAxis,
-		VisGroupedBar,
-		VisStackedBar,
-		VisXYContainer,
-	} from "@unovis/vue";
+	import { type BulletLegendItemInterface, CurveType } from "@unovis/ts";
+	import { Axis, Line } from "@unovis/ts";
+	import { VisAxis, VisLine, VisXYContainer } from "@unovis/vue";
 	import { useMounted } from "@vueuse/core";
 	import { type Component, computed, ref } from "vue";
 
@@ -25,22 +20,15 @@
 				 */
 				customTooltip?: Component;
 				/**
-				 * Change the type of the chart
-				 * @default "grouped"
+				 * Type of curve
 				 */
-				type?: "stacked" | "grouped";
-				/**
-				 * Rounded bar corners
-				 * @default 0
-				 */
-				roundedCorners?: number;
+				curveType?: CurveType;
 			}
 		>(),
 		{
-			type: "grouped",
-			margin: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+			curveType: CurveType.MonotoneX,
 			filterOpacity: 0.2,
-			roundedCorners: 0,
+			margin: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 			showXAxis: true,
 			showYAxis: true,
 			showTooltip: true,
@@ -48,6 +36,7 @@
 			showGridLine: true,
 		}
 	);
+
 	const emits = defineEmits<{
 		legendItemClick: [d: BulletLegendItemInterface, i: number];
 	}>();
@@ -59,6 +48,7 @@
 	const colors = computed(() =>
 		props.colors?.length ? props.colors : defaultColors(props.categories.length)
 	);
+
 	const legendItems = ref<BulletLegendItemInterface[]>(
 		props.categories.map((category, i) => ({
 			name: category,
@@ -72,15 +62,6 @@
 	function handleLegendItemClick(d: BulletLegendItemInterface, i: number) {
 		emits("legendItemClick", d, i);
 	}
-
-	const VisBarComponent = computed(() =>
-		props.type === "grouped" ? VisGroupedBar : VisStackedBar
-	);
-	const selectorsBar = computed(() =>
-		props.type === "grouped"
-			? GroupedBar.selectors.bar
-			: StackedBar.selectors.bar
-	);
 </script>
 
 <template>
@@ -92,30 +73,33 @@
 			@legend-item-click="handleLegendItemClick" />
 
 		<VisXYContainer
+			:margin="{ left: 20, right: 20 }"
 			:data="data"
-			:style="{ height: isMounted ? '100%' : 'auto' }"
-			:margin="margin">
+			:style="{ height: isMounted ? '100%' : 'auto' }">
 			<ChartCrosshair
 				v-if="showTooltip"
 				:colors="colors"
 				:items="legendItems"
-				:custom-tooltip="customTooltip"
-				:index="index" />
+				:index="index"
+				:custom-tooltip="customTooltip" />
 
-			<VisBarComponent
-				:x="(d: Data, i: number) => i"
-				:y="categories.map(category => (d: Data) => d[category]) "
-				:color="colors"
-				:rounded-corners="roundedCorners"
-				:bar-padding="0.05"
-				:attributes="{
-          [selectorsBar]: {
-            opacity: (d: Data, i:number) => {
-              const pos = i % categories.length
-              return legendItems[pos]?.inactive ? filterOpacity : 1
-            },
-          },
-        }" />
+			<template
+				v-for="(category, i) in categories"
+				:key="category">
+				<VisLine
+					:x="(d: Data, i: number) => i"
+					:y="(d: Data) => d[category]"
+					:curve-type="curveType"
+					:color="colors[i]"
+					:attributes="{
+						[Line.selectors.line]: {
+							opacity: legendItems.find((item) => item.name === category)
+								?.inactive
+								? filterOpacity
+								: 1,
+						},
+					}" />
+			</template>
 
 			<VisAxis
 				v-if="showXAxis"

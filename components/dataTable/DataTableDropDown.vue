@@ -67,21 +67,15 @@
 		navigator.clipboard.writeText(id.toString());
 	}
 
-	const initialValues = computed(() => ({
-		type: props.transaction.type,
-		category: props.transaction.category,
-		customCategory: props.transaction.customCategory ?? "",
-		amount: props.transaction.amount,
-		date_transaction: props.transaction.date_transaction,
-	}));
-
 	const predefinedCategories = {
 		income: ["Salary", "Freelance", "Investments", "Other", "Custom"],
 		expense: ["Rent", "Groceries", "Utilities", "Other", "Custom"],
 	};
 
+	const type = ref(props.transaction.type);
+
 	function onSubmit(values: any) {
-		if (!values.type) values.type = props.transaction.type;
+		values.type = type.value;
 		if (values.category === "Custom") {
 			values.category =
 				values.customCategory || props.transaction.customCategory;
@@ -149,7 +143,7 @@
 							<FormLabel>Type</FormLabel>
 							<FormControl>
 								<select
-									v-bind="componentField"
+									v-model="type"
 									class="col-span-2 h-8 flex w-full rounded-md border border-input bg-background text-sm ring-offset-background">
 									>
 									<option value="income">Income</option>
@@ -171,7 +165,7 @@
 									class="col-span-2 h-8 flex w-full rounded-md border border-input bg-background text-sm ring-offset-background">
 									>
 									<option
-										v-for="cat in predefinedCategories[props.transaction.type]"
+										v-for="cat in predefinedCategories[type]"
 										:key="cat"
 										:value="cat">
 										{{ cat }}
@@ -191,7 +185,7 @@
 										type="text"
 										v-bind="componentField"
 										:placeholder="
-											props.transaction.customCategory || 'Custom Category'
+											props.transaction.category || 'Custom Category'
 										" />
 								</FormControl>
 								<FormMessage />
