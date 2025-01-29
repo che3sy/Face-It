@@ -55,6 +55,7 @@
 		expenses.value = getExpenses();
 		balance.value = getBalance();
 		topCategory.value = getTopCategories();
+		periodName.value = useDateRangeStore().periodName;
 
 		isLoading.value = false;
 
@@ -143,6 +144,23 @@
 	});
 
 	import { LineChart } from "@/components/ui/chart-line";
+	import { ColorBarChart } from "@/components/ui/ColorBarChart";
+
+	const response = ref<string | null>(null);
+	const formatResponse = (text: string) => {
+		const formattedText = text
+			.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Bold text
+			.replace(/\*\s<strong>/g, "<strong>") // Remove extra * before bold text
+			.replace(/\n+/g, "</li><li>") // New lines to list items, handle multiple new lines
+			.replace(/^<\/li><li>|<\/li><li>$/g, ""); // Remove leading and trailing <li> tags
+
+		return `<ul><li>${formattedText}</li></ul>`;
+	};
+
+	onMounted(async () => {
+		const aiResponse = await useAI();
+		response.value = formatResponse(aiResponse);
+	});
 </script>
 <template>
 	<div class="relative flex flex-row items-center justify-center py-2">
@@ -157,6 +175,7 @@
 					<div class="ml-2"> ${{ balance.toFixed(2) }} </div>
 				</CardTitle>
 			</CardHeader>
+
 			<CardContent>
 				<p
 					class="text-xs"
@@ -168,7 +187,7 @@
 							: 'text-gray-400'
 					">
 					{{ balanceChange >= 0 ? "+" : "" }}{{ balanceChange.toFixed(1) }}%
-					from last week
+					from last {{ periodName }}
 				</p>
 			</CardContent>
 		</Card>
@@ -181,6 +200,9 @@
 			<CardHeader>
 				<CardTitle>Income Categories</CardTitle>
 			</CardHeader>
+			<CardDescription class="ml-6 mb-2"
+				>All income categories in a pie chart</CardDescription
+			>
 			<CardContent class="pl-2">
 				<DonutChart
 					v-if="!isLoading"
@@ -200,7 +222,8 @@
 				<CardTitle>Income vs. Expenses</CardTitle>
 			</CardHeader>
 			<CardDescription class="pl-6"
-				>Line chart version of Income vs. Expenses
+				>Line chart showing income vs. expenses over time in specified period
+				intervals
 			</CardDescription>
 			<CardContent class="pl-2">
 				<LineChart
@@ -223,6 +246,9 @@
 			<CardHeader>
 				<CardTitle>Expense Categories</CardTitle>
 			</CardHeader>
+			<CardDescription class="ml-6 mb-2"
+				>All expense categories in a pie chart</CardDescription
+			>
 			<CardContent class="pl-2">
 				<DonutChart
 					v-if="!isLoading"
@@ -243,7 +269,8 @@
 				<CardTitle>Income vs. Expenses </CardTitle>
 			</CardHeader>
 			<CardDescription class="pl-6"
-				>Bar chart version of Income vs. Expenses
+				>Bar chart showing income vs. expenses over time in specified period
+				intervals
 			</CardDescription>
 			<CardContent class="pl-2">
 				<BarChart
@@ -264,10 +291,14 @@
 		</Card>
 		<Card class="col-span-2">
 			<CardHeader>
-				<CardTitle>Category Spending</CardTitle>
+				<CardTitle>Total Category Value</CardTitle>
 			</CardHeader>
+			<CardDescription class="ml-6 mb-2"
+				>The total amount spent or earned in all categories</CardDescription
+			>
+
 			<CardContent class="pl-2">
-				<BarChart
+				<ColorBarChart
 					v-if="!isLoading"
 					index="name"
 					:data="[...incomeCategoryData, ...expenseCategoryData]"
@@ -282,10 +313,14 @@
 					:rounded-corners="4" />
 			</CardContent>
 		</Card>
-		<Card class="col-span-4">
+		<Card class="col-span-2">
 			<CardHeader>
 				<CardTitle>Predicted Trends</CardTitle>
 			</CardHeader>
+			<CardDescription class="ml-6 mb-2"
+				>Predicted values for income, expense, and balance 5 {{ periodName }}'s
+				later</CardDescription
+			>
 			<CardContent class="pl-2">
 				<LineChart
 					v-if="!isLoading"
@@ -299,7 +334,6 @@
 								: '';
 						}
 					"
-					:rounded-corners="4"
 					:colors="[
 						'hsl(var(--primary))',
 						'hsl(var(--destructive))',
@@ -307,5 +341,32 @@
 					]" />
 			</CardContent>
 		</Card>
+		<Card class="col-span-2">
+			<CardHeader>
+				<CardTitle
+					class="inline-block bg-gradient-to-r from-purple-800 via-red-600 to-red-600 bg-clip-text text-transparent"
+					>AI Tips</CardTitle
+				>
+			</CardHeader>
+			<CardDescription class="ml-6 mb-2"
+				>Tips from AI on how to save more money
+			</CardDescription>
+			<CardContent class="ml-2">
+				<div
+					v-html="response"
+					class="ai-response"></div>
+			</CardContent>
+		</Card>
 	</div>
 </template>
+<style scoped>
+	.ai-response ::v-deep ul {
+		list-style-type: disc;
+		padding-left: 20px;
+	}
+
+	.ai-response ::v-deep li {
+		margin-bottom: 10px;
+		display: list-item;
+	}
+</style>

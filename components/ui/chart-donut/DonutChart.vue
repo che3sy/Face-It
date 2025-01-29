@@ -1,7 +1,10 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
 	import type { BaseChartProps } from ".";
-
-	import { ChartSingleTooltip, defaultColors } from "@/components/ui/chart";
+	import {
+		ChartSingleTooltip,
+		ChartLegend,
+		defaultColors,
+	} from "@/components/ui/chart";
 	import { cn } from "@/lib/utils";
 	import { Donut } from "@unovis/ts";
 	import { VisDonut, VisSingleContainer } from "@unovis/vue";
@@ -85,7 +88,8 @@
 </script>
 
 <template>
-	<div :class="cn('w-full h-48 flex flex-col items-end', $attrs.class ?? '')">
+	<div
+		:class="cn('w-full h-48 flex flex-col items-center', $attrs.class ?? '')">
 		<VisSingleContainer
 			:style="{ height: isMounted ? '100%' : 'auto' }"
 			:margin="{ left: 20, right: 20 }"
@@ -122,5 +126,9 @@
 
 			<slot />
 		</VisSingleContainer>
+		<ChartLegend
+			v-if="showLegend"
+			v-model:items="legendItems"
+			class="mt-4" />
 	</div>
 </template>

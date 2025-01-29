@@ -174,6 +174,10 @@
 			<CardHeader>
 				<CardTitle>Income vs. Expenses </CardTitle>
 			</CardHeader>
+			<CardDescription class="pl-6"
+				>Bar chart showing income vs. expenses over time in specified period
+				intervals
+			</CardDescription>
 			<CardContent class="pl-2">
 				<BarChart
 					v-if="!isLoading"
@@ -195,7 +199,8 @@
 			<CardHeader>
 				<CardTitle>Recent Transactions</CardTitle>
 				<CardDescription>
-					{{ lastFiveTransactions.length }} recent transactions in this period.
+					{{ lastFiveTransactions.length }} most recent transactions in this
+					period.
 				</CardDescription>
 			</CardHeader>
 			<CardContent>

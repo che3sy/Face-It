@@ -4,22 +4,21 @@
 	import { onMounted, ref } from "vue";
 	import { LucideSun, LucideMoon } from "lucide-vue-next";
 	const colorMode = useColorMode();
-	const refreshKey = ref(0);
+	const load = ref(false);
 	const toggleDarkMode = () => {
 		colorMode.value = colorMode.value === "dark" ? "light" : "dark";
 		localStorage.setItem("colorMode", colorMode.value);
-		refreshKey.value++;
 	};
 	onMounted(() => {
 		const savedColorMode = localStorage.getItem("colorMode");
 		if (savedColorMode) {
 			colorMode.value = savedColorMode as "light" | "dark" | "auto";
-			refreshKey.value++;
+			load.value = true;
 		}
 	});
 </script>
 <template
-	><div :key="refreshKey">
+	><div :v-if="load">
 		<button
 			@click="toggleDarkMode"
 			v-if="colorMode === 'dark'">

@@ -15,5 +15,5 @@ export function predict(
 	{ slope, intercept }: { slope: number; intercept: number },
 	x: number
 ) {
-	return slope * x + intercept;
+	return Math.round((slope * x + intercept) * 100) / 100;
 }
