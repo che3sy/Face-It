@@ -1,4 +1,21 @@
 export const useFinancialData = () => {
+	if (import.meta.env.SSR) {
+		return {
+			getIncome: () => 0,
+			getExpenses: () => 0,
+			getBalance: () => 0,
+			getPeriodData: () => [],
+			getRecentTransactions: async () => [],
+			addTransaction: async () => {},
+			editTransaction: async () => {},
+			deleteTransaction: async () => {},
+			getTopCategories: () => undefined,
+			getIncomeCategories: () => ({}),
+			getExpenseCategories: () => ({}),
+			predictFutureData: () => [],
+		};
+	}
+
 	const client = useSupabaseClient<{
 		data: {
 			type: "income" | "expense";
