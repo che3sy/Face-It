@@ -438,7 +438,7 @@
 							<CardContent
 								class="flex aspect-square items-center justify-center p-6">
 								<img
-									src="../assets/images/AI.png"
+									src="../assets/images/ai.png"
 									class="border-2 border-primary/50 rounded" />
 							</CardContent>
 						</Card>
