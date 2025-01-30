@@ -27,12 +27,20 @@
 
 	// Define the form schema using Zod
 	const formSchema = toTypedSchema(
-		z.object({
-			email: z.string().email({ message: "Invalid email address" }),
-			password: z
-				.string()
-				.min(6, { message: "Password must be at least 6 characters" }),
-		})
+		z
+			.object({
+				email: z.string().email({ message: "Invalid email address" }),
+				password: z
+					.string()
+					.min(6, { message: "Password must be at least 6 characters" }),
+				confirmPassword: z.string().min(6, {
+					message: "Confirm password must be at least 6 characters",
+				}),
+			})
+			.refine((data) => data.password === data.confirmPassword, {
+				path: ["confirmPassword"],
+				message: "Passwords must match",
+			})
 	);
 
 	// Setup VeeValidate form
@@ -45,7 +53,7 @@
 			email: values.email,
 			password: values.password,
 			options: {
-				emailRedirectTo: "http://localhost:3000/confirm",
+				emailRedirectTo: "https://face-it.pages.dev/confirm",
 			},
 		});
 		if (error) {
@@ -101,6 +109,21 @@
 									v-bind="field" />
 							</FormControl>
 							<FormDescription>Create a strong password.</FormDescription>
+							<FormMessage />
+						</FormItem>
+					</FormField>
+					<FormField
+						name="confirmPassword"
+						v-slot="{ field }">
+						<FormItem>
+							<FormLabel>Confirm Password</FormLabel>
+							<FormControl>
+								<Input
+									type="password"
+									placeholder="Confirm Password"
+									v-bind="field" />
+							</FormControl>
+							<FormDescription>Please retype your password.</FormDescription>
 							<FormMessage />
 						</FormItem>
 					</FormField>
