@@ -41,6 +41,7 @@
 
 	const onSubmit = form.handleSubmit(async (values) => {
 		loginError.value = "";
+		isLoading.value = true;
 		const { data, error } = await supabase.auth.signInWithPassword({
 			email: values.email,
 			password: values.password,

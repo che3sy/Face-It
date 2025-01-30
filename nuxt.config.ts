@@ -1,5 +1,11 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+	runtimeConfig: {
+		geminiApiKey: process.env.GEMINI_API_KEY,
+		public: {
+			geminiApiKey: process.env.GEMINI_API_KEY,
+		},
+	},
 	compatibilityDate: "2024-11-01",
 	devtools: { enabled: true },
 	css: ["~/assets/css/main.css"],
@@ -33,5 +39,6 @@ export default defineNuxtConfig({
 			exclude: ["/", "/signUp"],
 			cookieRedirect: true,
 		},
+		redirect: true,
 	},
 });

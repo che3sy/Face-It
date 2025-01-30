@@ -1,7 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { useFinancialData } from "./useFinancialData";
-import dotenv from "dotenv";
-dotenv.config();
 
 export const useAI = async () => {
 	try {
@@ -15,7 +13,8 @@ export const useAI = async () => {
 			)
 			.join("\n");
 
-		const apiKey = process.env.GEMINI_API_KEY;
+		const config = useRuntimeConfig();
+		const apiKey = config.public.geminiApiKey;
 		if (!apiKey) {
 			throw new Error(
 				"GEMINI_API_KEY is not defined in the environment variables."
