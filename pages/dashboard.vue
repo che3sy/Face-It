@@ -46,7 +46,7 @@
 					<TabsTrigger value="Overview"> Overview </TabsTrigger>
 					<TabsTrigger value="Table"> Table </TabsTrigger>
 					<TabsTrigger value="Analytics"> Analytics </TabsTrigger>
-					<TabsTrigger value="Reports"> Reports </TabsTrigger>
+					<TabsTrigger value="Reports"> Report </TabsTrigger>
 				</TabsList>
 				<Popover>
 					<PopoverTrigger as-child>

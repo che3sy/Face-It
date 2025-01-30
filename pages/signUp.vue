@@ -68,7 +68,9 @@
 		<Card class="w-[350px]">
 			<CardHeader>
 				<CardTitle>Sign Up</CardTitle>
-				<CardDescription>Sign up for the epic project</CardDescription>
+				<CardDescription
+					>Sign up for Face-It to mange transactions</CardDescription
+				>
 			</CardHeader>
 			<CardContent>
 				<form @submit="onSubmit">

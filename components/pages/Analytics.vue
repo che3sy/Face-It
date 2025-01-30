@@ -118,9 +118,17 @@
 		return Object.values(categories);
 	});
 
-	const expenseCategoryData = computed(() => {
+	const expenseCategoryPie = computed(() => {
 		const categories = getExpenseCategories();
 		return Object.values(categories);
+	});
+
+	const expenseCategoryData = computed(() => {
+		const categories = getExpenseCategories();
+		return Object.values(categories).map((category) => ({
+			...category,
+			amount: -category.amount,
+		}));
 	});
 
 	const defaultColors = (count: number = 3) => {
@@ -161,6 +169,16 @@
 		const aiResponse = await useAI();
 		response.value = formatResponse(aiResponse);
 	});
+
+	const xFormatter = (
+		tick: number | Date,
+		i: number,
+		ticks: (number | Date)[]
+	) => {
+		const index = typeof tick === "number" ? tick : i;
+		const periodsAgo = periodData.value.length - 1 - index;
+		return `${periodsAgo}`;
+	};
 </script>
 <template>
 	<div class="relative flex flex-row items-center justify-center py-2">
@@ -195,7 +213,7 @@
 	<Separator
 		orientation="vertical"
 		class="mb-4 w-full py-[0.5px]" />
-	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 pb-4">
 		<Card class="col-span-1">
 			<CardHeader>
 				<CardTitle>Income Categories</CardTitle>
@@ -231,6 +249,7 @@
 					index="name"
 					:data="periodData"
 					:categories="['income', 'expenses']"
+					:x-formatter="xFormatter"
 					:y-formatter="
 						(tick) => {
 							return typeof tick === 'number'
@@ -240,6 +259,11 @@
 					"
 					:rounded-corners="4"
 					:colors="['hsl(var(--primary))', 'hsl(var(--destructive))']" />
+				<div class="flex flex-row items-center justify-center mt-2"
+					><h5 class="text-sm text-muted-foreground"
+						>{{ periodName }}s ago</h5
+					></div
+				>
 			</CardContent>
 		</Card>
 		<Card class="col-span-1">
@@ -254,7 +278,7 @@
 					v-if="!isLoading"
 					index="name"
 					:category="'amount'"
-					:data="expenseCategoryData"
+					:data="expenseCategoryPie"
 					:colors="expenseColors"
 					:value-formatter="
 						(tick) =>
@@ -278,6 +302,7 @@
 					index="name"
 					:data="periodData"
 					:categories="['income', 'expenses']"
+					:x-formatter="xFormatter"
 					:y-formatter="
 						(tick, i) => {
 							return typeof tick === 'number'
@@ -287,6 +312,11 @@
 					"
 					:rounded-corners="4"
 					:colors="['hsl(var(--primary))', 'hsl(var(--destructive))']" />
+				<div class="flex flex-row items-center justify-center mt-2"
+					><h5 class="text-sm text-muted-foreground"
+						>{{ periodName }}s ago</h5
+					></div
+				>
 			</CardContent>
 		</Card>
 		<Card class="col-span-2">
@@ -360,12 +390,12 @@
 	</div>
 </template>
 <style scoped>
-	.ai-response ::v-deep ul {
+	.ai-response :deep(ul) {
 		list-style-type: disc;
 		padding-left: 20px;
 	}
 
-	.ai-response ::v-deep li {
+	.ai-response :deep(li) {
 		margin-bottom: 10px;
 		display: list-item;
 	}

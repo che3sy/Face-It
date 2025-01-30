@@ -58,7 +58,15 @@
 	       balanceChange.value = 0
 	   }
 		   }
-
+		const xFormatter = (
+			tick,
+			i,
+			ticks
+		) => {
+			const index = typeof tick === "number" ? tick : i;
+			const periodsAgo = periodData.value.length - 1 - index;
+			return `${periodsAgo}`;
+		};
 		   onMounted(() => {
 		       refreshData()
 		   })
@@ -183,6 +191,7 @@
 					v-if="!isLoading"
 					index="name"
 					:data="periodData"
+					:x-formatter="xFormatter"
 					:categories="['income', 'expenses']"
 					:y-formatter="
 						(tick, i) => {
@@ -193,6 +202,11 @@
 					"
 					:rounded-corners="4"
 					:colors="['hsl(var(--primary))', 'hsl(var(--destructive))']" />
+				<div class="flex flex-row items-center justify-center mt-2"
+					><h5 class="text-sm text-muted-foreground"
+						>{{ periodName }}s ago</h5
+					></div
+				>
 			</CardContent>
 		</Card>
 		<Card class="col-span-3">
