@@ -36,12 +36,18 @@
 		validationSchema: formSchema,
 	});
 
+	const loginError = ref<string>("");
+	const isLoading = ref<boolean>(false);
+
 	const onSubmit = form.handleSubmit(async (values) => {
+		loginError.value = "";
 		const { data, error } = await supabase.auth.signInWithPassword({
 			email: values.email,
 			password: values.password,
 		});
+		isLoading.value = false;
 		if (error) {
+			loginError.value = "Incorrect email or password";
 			console.log(error);
 		} else {
 			console.log("Sign in successful");
@@ -70,6 +76,11 @@
 			</CardHeader>
 			<CardContent>
 				<form @submit="onSubmit">
+					<div
+						v-if="loginError"
+						class="text-red-500 text-sm mb-4">
+						{{ loginError }}
+					</div>
 					<FormField
 						name="email"
 						v-slot="{ field }">
@@ -108,7 +119,17 @@
 							@click="navigateTo('/signUp')"
 							>Sign Up</Button
 						>
-						<Button type="submit">Log In</Button>
+						<Button
+							type="submit"
+							:disabled="isLoading">
+							<span
+								v-if="isLoading"
+								class="flex items-center">
+								<LucideLoader class="animate-spin mr-2" />
+								Loading...
+							</span>
+							<span v-else>Log In</span>
+						</Button>
 					</CardFooter>
 				</form>
 			</CardContent>

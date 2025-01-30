@@ -1,5 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { useFinancialData } from "./useFinancialData";
+import dotenv from "dotenv";
+dotenv.config();
 
 export const useAI = async () => {
 	try {
@@ -13,9 +15,15 @@ export const useAI = async () => {
 			)
 			.join("\n");
 
-		const genAI = new GoogleGenerativeAI(
-			"AIzaSyDwtY-22oCf2FrZxHVbIaHteBLR2Qm6EpE"
-		);
+		const apiKey = process.env.GEMINI_API_KEY;
+		if (!apiKey) {
+			throw new Error(
+				"GEMINI_API_KEY is not defined in the environment variables."
+			);
+		}
+
+		const genAI = new GoogleGenerativeAI(apiKey);
+
 		const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 		const prompt = `Below I have some financial data, I want to save more money. Can you give me bullet points (max 5) on what I should do to help me save more money (just give points nothing else, make sure its connected to my data so I can get specific information on what to change)?\n\n${financialData}`;
