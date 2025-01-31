@@ -31,9 +31,7 @@
 	} from "@/components/ui/form";
 
 	import { Input } from "@/components/ui/input";
-	import { toast } from "@/components/ui/toast";
 	import { toTypedSchema } from "@vee-validate/zod";
-	import { h } from "vue";
 	import * as z from "zod";
 
 	const formSchema = toTypedSchema(
@@ -41,7 +39,7 @@
 			type: z.enum(["income", "expense"]).optional(),
 			category: z.string().optional(),
 			customCategory: z.string().optional(),
-			amount: z.number().positive().optional(),
+			amount: z.number().positive().optional(), // This allows decimal values
 			date_transaction: z.string().optional(),
 		})
 	);
@@ -54,6 +52,7 @@
 			amount: number;
 			date_transaction: string;
 			date_created: string;
+			customCategory?: string;
 		};
 	}>();
 
@@ -68,8 +67,25 @@
 	}
 
 	const predefinedCategories = {
-		income: ["Salary", "Freelance", "Investments", "Other", "Custom"],
-		expense: ["Rent", "Groceries", "Utilities", "Other", "Custom"],
+		income: [
+			"Salary",
+			"Chores",
+			"Gift",
+			"Allowance",
+			"Freelance",
+			"Other",
+			"Custom",
+		],
+		expense: [
+			"Food",
+			"Clothing",
+			"Books",
+			"Tuition",
+			"Transport",
+			"Entertainment",
+			"Other",
+			"Custom",
+		],
 	};
 
 	const type = ref(props.transaction.type);
@@ -201,6 +217,7 @@
 							<FormControl>
 								<Input
 									type="number"
+									step="0.01"
 									v-bind="componentField"
 									:placeholder="props.transaction.amount.toString()" />
 							</FormControl>

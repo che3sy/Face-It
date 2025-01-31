@@ -21,8 +21,25 @@
 	const date_transaction = ref('')
 
 	const predefinedCategories = {
-	    income: ['Salary', 'Freelance', 'Investments', 'Other'],
-	    expense: ['Rent', 'Groceries', 'Utilities', 'Other'],
+		income: [
+			"Salary",
+			"Chores",
+			"Gift",
+			"Allowance",
+			"Freelance",
+			"Other",
+			"Custom",
+		],
+		expense: [
+			"Food",
+			"Clothing",
+			"Books",
+			"Tuition",
+			"Transport",
+			"Entertainment",
+			"Other",
+			"Custom",
+		],
 	}
 
 	const handleSubmit = async () => {

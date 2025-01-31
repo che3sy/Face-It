@@ -15,8 +15,6 @@
 		getLocalTimeZone,
 	} from "@internationalized/date";
 
-	import { type Ref, ref } from "vue";
-
 	const df = new DateFormatter("en-US", {
 		dateStyle: "medium",
 	});
@@ -28,8 +26,9 @@
 		end: undefined,
 	}) as Ref<DateRange>;
 	const dateRangeStore = useDateRangeStore();
-	watch(value, (newVal) => {
-		console.log(value);
+
+	const submitDateRange = () => {
+		const newVal = value.value;
 		const startEpoch = newVal.start
 			? newVal.start.toDate(getLocalTimeZone()).getTime()
 			: 0;
@@ -41,26 +40,7 @@
 			Math.floor(endEpoch / 1000)
 		);
 		popoverOpen.value = false;
-	});
-	watch(
-		() => [dateRangeStore.start, dateRangeStore.end],
-		([newStart, newEnd]) => {
-			value.value.start = newStart
-				? new CalendarDate(
-						new Date(newStart * 1000).getFullYear(),
-						new Date(newStart * 1000).getMonth() + 1,
-						new Date(newStart * 1000).getDate()
-				  )
-				: undefined;
-			value.value.end = newEnd
-				? new CalendarDate(
-						new Date(newEnd * 1000).getFullYear(),
-						new Date(newEnd * 1000).getMonth() + 1,
-						new Date(newEnd * 1000).getDate()
-				  )
-				: undefined;
-		}
-	);
+	};
 </script>
 
 <template>
@@ -101,6 +81,9 @@
 					initial-focus
 					:placeholder="value.start"
 					@update:start-value="(startDate) => (value.start = startDate)" />
+				<div class="flex flex-row justify-end p-4 space-x-2">
+					<Button @click="submitDateRange">Submit</Button>
+				</div>
 			</PopoverContent>
 		</Popover>
 	</div>

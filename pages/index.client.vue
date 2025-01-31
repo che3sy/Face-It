@@ -400,7 +400,7 @@
 								>Step 3: View and Mange Transactions</CardTitle
 							>
 							<CardDescription class="ml-4 mt-2"
-								>View and mange your finincal data worry free</CardDescription
+								>View and mange your financial data worry free</CardDescription
 							>
 							<CardContent
 								class="flex aspect-square items-center justify-center p-6">

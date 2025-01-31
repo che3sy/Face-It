@@ -34,7 +34,7 @@
 		>(),
 		{
 			type: "grouped",
-			margin: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+			margin: () => ({ top: 30, bottom: 0, left: 0, right: 0 }),
 			filterOpacity: 0.2,
 			roundedCorners: 0,
 			showXAxis: true,
@@ -72,11 +72,6 @@
 
 	const isMounted = useMounted();
 
-	const selectorsBar = computed(() =>
-		props.type === "grouped"
-			? GroupedBar.selectors.bar
-			: StackedBar.selectors.bar
-	);
 	// Add a computed property for unique category names
 	const uniqueNames = computed(() => {
 		return [...new Set(props.data.map((d) => d[props.index as KeyOfT]))];

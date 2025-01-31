@@ -3,7 +3,6 @@
 		Card,
 		CardContent,
 		CardDescription,
-		CardFooter,
 		CardHeader,
 		CardTitle,
 	} from "@/components/ui/card";
@@ -54,7 +53,7 @@
 		income.value = getIncome();
 		expenses.value = getExpenses();
 		balance.value = getBalance();
-		topCategory.value = getTopCategories();
+		topCategory.value = getTopCategories() || null;
 		periodName.value = useDateRangeStore().periodName;
 
 		isLoading.value = false;
@@ -113,19 +112,21 @@
 	);
 	import { DonutChart } from "@/components/ui/chart-donut";
 
-	const incomeCategoryData = computed(() => {
-		const categories = getIncomeCategories();
-		return Object.values(categories);
+	type CategoryData = Record<string, any> & { amount: number };
+
+	const incomeCategoryData = computed<CategoryData[]>(() => {
+		const categories = getIncomeCategories() || {};
+		return Object.values(categories) as CategoryData[];
 	});
 
-	const expenseCategoryPie = computed(() => {
-		const categories = getExpenseCategories();
-		return Object.values(categories);
+	const expenseCategoryPie = computed<CategoryData[]>(() => {
+		const categories = getExpenseCategories() || {};
+		return Object.values(categories) as CategoryData[];
 	});
 
-	const expenseCategoryData = computed(() => {
-		const categories = getExpenseCategories();
-		return Object.values(categories).map((category) => ({
+	const expenseCategoryData = computed<CategoryData[]>(() => {
+		const categories = getExpenseCategories() || {};
+		return (Object.values(categories) as CategoryData[]).map((category) => ({
 			...category,
 			amount: -category.amount,
 		}));
