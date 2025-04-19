@@ -1,8 +1,4 @@
 <script lang="ts" setup>
-	definePageMeta({
-		ssr: false,
-		middleware: [],
-	});
 	import { Button } from "@/components/ui/button";
 	import {
 		Card,
@@ -309,24 +305,26 @@
 </script>
 <template>
 	<div class="bg-accent2 py-4 rounded-lg">
-		<LineChart
-			class="relative mt-12"
-			index="year"
-			:data="data"
-			:categories="['Export Growth Rate']"
-			:y-formatter="
-				(tick, i) => {
-					return typeof tick === 'number'
-						? `$ ${new Intl.NumberFormat('us').format(tick).toString()}`
-						: '';
-					``;
-				}
-			"
-			:show-tooltip="false"
-			:show-grid-line="false"
-			:show-legend="false"
-			:show-x-axis="false"
-			:show-y-axis="false" />
+		<ClientOnly>
+			<LineChart
+				class="relative mt-12"
+				index="year"
+				:data="data"
+				:categories="['Export Growth Rate']"
+				:y-formatter="
+					(tick, i) => {
+						return typeof tick === 'number'
+							? `$ ${new Intl.NumberFormat('us').format(tick).toString()}`
+							: '';
+						``;
+					}
+				"
+				:show-tooltip="false"
+				:show-grid-line="false"
+				:show-legend="false"
+				:show-x-axis="false"
+				:show-y-axis="false" />
+		</ClientOnly>
 
 		<div
 			class="text-9xl text-primary font-black absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
