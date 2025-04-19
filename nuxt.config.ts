@@ -37,7 +37,7 @@ export default defineNuxtConfig({
 			callback: "/confirm",
 			include: ["/dashboard"],
 			exclude: ["/", "/signUp"],
-			cookieRedirect: true,
+			saveRedirectToCookie: true,
 		},
 		redirect: true,
 	},

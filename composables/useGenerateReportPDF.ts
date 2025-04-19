@@ -1,6 +1,4 @@
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import { saveAs } from "file-saver";
+import { ref } from "vue";
 import { useFinancialData } from "./useFinancialData";
 import { useDateRangeStore } from "../stores/dateRange";
 
@@ -19,19 +17,23 @@ export const useGenerateReportPDF = () => {
 		getTopCategories,
 	} = useFinancialData();
 	const dateRangeStore = useDateRangeStore();
-	const docRef = ref<jsPDF | null>(null);
+	const docRef = ref<any>(null);
 
 	const generateReportDoc = async () => {
+		// Import jspdf and autoTable dynamically (client only)
+		const { jsPDF } = await import("jspdf");
+		const autoTableModule = await import("jspdf-autotable");
+		const autoTable = autoTableModule.default || autoTableModule;
+
 		const doc = new jsPDF();
 
-		// Fetch the necessary data
+		// Fetch data
 		const periodData: PeriodData[] = getPeriodData() as PeriodData[];
 		const income = getIncome();
 		const expenses = getExpenses();
 		const balance = getBalance();
 		const topCategory = getTopCategories();
 
-		// Ensure topCategory is of the correct type
 		let topCategoryText = "N/A";
 		if (topCategory && typeof topCategory[1] === "number") {
 			topCategoryText = `${topCategory[0]} - $${topCategory[1].toFixed(2)}`;
@@ -47,7 +49,7 @@ export const useGenerateReportPDF = () => {
 		// Add content to the PDF
 		doc.setFontSize(18);
 		doc.text("Financial Report", 10, 10);
-		doc.addImage(img, "PNG", 150, 5, 40, 40); // Adjust the position and size as needed
+		doc.addImage(img, "PNG", 150, 5, 40, 40);
 
 		doc.setFontSize(12);
 		doc.text(`Period Split: ${dateRangeStore.periodName}`, 10, 20);
@@ -59,14 +61,14 @@ export const useGenerateReportPDF = () => {
 		doc.setFontSize(10);
 		doc.setTextColor("green");
 		doc.setFont("courier", "bold");
-		doc.text("Provided by Face-It", 150, 50); // Adjust the position as needed
+		doc.text("Provided by Face-It", 150, 50);
 
-		// Filter out rows where both income and expenses are 0
+		// Filter out rows where both income and expenses are 0.
 		const filteredPeriodData = periodData.filter(
 			(data) => data.income !== 0 || data.expenses !== 0
 		);
 
-		// Add table for period data
+		// Add a table for period data.
 		autoTable(doc, {
 			startY: 70,
 			head: [["Period", "Income", "Expenses"]],
@@ -80,14 +82,14 @@ export const useGenerateReportPDF = () => {
 		docRef.value = doc;
 	};
 
-	const generateReportPDF = () => {
-		// Generate doc and save directly
-		generateReportDoc().then(() => {
-			if (docRef.value) {
-				const pdfBlob = docRef.value.output("blob");
-				saveAs(pdfBlob, "financial_report.pdf");
-			}
-		});
+	const generateReportPDF = async () => {
+		await generateReportDoc();
+		// Dynamically import file-saver so it's not processed during SSR.
+		const { saveAs } = await import("file-saver");
+		if (docRef.value) {
+			const pdfBlob = docRef.value.output("blob");
+			saveAs(pdfBlob, "financial_report.pdf");
+		}
 	};
 
 	return {

@@ -1,4 +1,8 @@
 <script lang="ts" setup>
+	definePageMeta({
+		ssr: false,
+		middleware: [],
+	});
 	import { Button } from "@/components/ui/button";
 	import {
 		Card,
@@ -323,6 +327,7 @@
 			:show-legend="false"
 			:show-x-axis="false"
 			:show-y-axis="false" />
+
 		<div
 			class="text-9xl text-primary font-black absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
 			<div
@@ -331,7 +336,9 @@
 			</div>
 		</div>
 		<div class="text-center mt-4">
-			<h1 class="text-2xl font-bold">Face-It: Time to Master Your Money</h1>
+			<h1 class="text-2xl font-bold"
+				>Let's Face-It, it's Time to Master Your Money</h1
+			>
 			<p class="text-muted-foreground">Mangage and track your finances</p>
 		</div>
 	</div>
