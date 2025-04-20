@@ -40,5 +40,6 @@ export default defineNuxtConfig({
 			cookieRedirect: true,
 		},
 		redirect: true,
+		useSsrCookies: true,
 	},
 });
