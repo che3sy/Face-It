@@ -185,7 +185,7 @@ export const useFinancialData = () => {
 
 		// Fetch the updated transactions after adding the new one
 		await fetchTransactions();
-		triggerStore.toggelTrigger();
+		triggerStore.toggleTrigger();
 	};
 
 	const editTransaction = async (
@@ -209,7 +209,7 @@ export const useFinancialData = () => {
 
 		// Fetch the updated transactions after editing the transaction
 		await fetchTransactions();
-		triggerStore.toggelTrigger();
+		triggerStore.toggleTrigger();
 	};
 
 	const deleteTransaction = async (id: number) => {
@@ -222,7 +222,7 @@ export const useFinancialData = () => {
 
 		// Fetch the updated transactions after deleting the transaction
 		await fetchTransactions();
-		triggerStore.toggelTrigger();
+		triggerStore.toggleTrigger();
 	};
 
 	const getTopCategories = () => {

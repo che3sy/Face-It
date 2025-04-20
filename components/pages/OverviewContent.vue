@@ -88,7 +88,9 @@
 </script>
 
 <template>
+	<!-- Grid container for the main overview cards -->
 	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+		<!-- Balance Card -->
 		<Card>
 			<CardHeader
 				class="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -96,7 +98,10 @@
 				<LucideDollarSign class="h-4 w-4 text-muted-foreground" />
 			</CardHeader>
 			<CardContent>
+				<!-- Display the current balance -->
+
 				<div class="text-2xl font-bold"> ${{ balance.toFixed(2) }} </div>
+				<!-- Show percentage change since the last period, styled conditionally -->
 				<p
 					class="text-xs"
 					:class="

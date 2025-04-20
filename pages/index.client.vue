@@ -560,8 +560,8 @@
 					<Button
 						varient="primary"
 						@click="navigateTo('/signUp')"
-						>Sign Up</Button
-					>
+						>Sign Up
+					</Button>
 				</div>
 			</CardFooter>
 		</Card>

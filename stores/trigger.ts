@@ -5,7 +5,7 @@ export const useTriggerStore = defineStore("trigger", {
 		trigger: false,
 	}),
 	actions: {
-		toggelTrigger() {
+		toggleTrigger() {
 			this.trigger = !this.trigger;
 		},
 	},

@@ -23,35 +23,53 @@
 
 	const supabase = useSupabaseClient();
 
+	// Define the validation schema using Zod and VeeValidate
 	const formSchema = toTypedSchema(
 		z.object({
+			// Validate email: must be a string and a valid email format
 			email: z.string().email({ message: "Invalid email address" }),
+			// Validate password: must be a string and at least 6 characters long
 			password: z
 				.string()
 				.min(6, { message: "Password must be at least 6 characters" }),
 		})
 	);
 
+	// Initialize the form using VeeValidate's useForm composable
+	// Pass the defined validation schema to it
 	const form = useForm({
 		validationSchema: formSchema,
 	});
 
+	// Reactive variable to store login error messages
 	const loginError = ref<string>("");
+	// Reactive variable to track the loading state during login
 	const isLoading = ref<boolean>(false);
 
+	// Define the submit handler function using VeeValidate's handleSubmit
+	// This function will only be called if the form validation passes
 	const onSubmit = form.handleSubmit(async (values) => {
+		// Clear any previous login errors
 		loginError.value = "";
+		// Set loading state to true
 		isLoading.value = true;
+		// Attempt to sign in the user using Supabase auth
 		const { data, error } = await supabase.auth.signInWithPassword({
-			email: values.email,
-			password: values.password,
+			email: values.email, // Get email from form values
+			password: values.password, // Get password from form values
 		});
+		// Set loading state back to false
 		isLoading.value = false;
+		// Check if there was an error during sign-in
 		if (error) {
+			// Set the login error message
 			loginError.value = "Incorrect email or password";
+			// Log the error to the console for debugging
 			console.log(error);
 		} else {
+			// Log success message to the console
 			console.log("Sign in successful");
+			// Redirect the user to the dashboard page upon successful login
 			navigateTo("/dashboard");
 		}
 	});
