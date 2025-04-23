@@ -105,7 +105,6 @@
 												:value="cat"
 												>{{ cat }}</option
 											>
-											<option value="Custom">Custom</option>
 										</select>
 									</div>
 									<div
